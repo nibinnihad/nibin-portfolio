@@ -1,7 +1,7 @@
 /**
  * Swarm rebuild engine — an original implementation for this portfolio.
  *
- * A team of named cursors rebuilds the real page block by block: boxes are
+ * A team of unseen agents rebuilds the real page block by block: boxes are
  * dragged out, text is typed, media is swept in, repeated cards are
  * duplicated. Work unlocks as the visitor scrolls. Everything is drawn on a
  * single fixed canvas from one requestAnimationFrame loop; React is not
@@ -153,7 +153,6 @@ function toolFor(task: Task): Tool {
 
 export class SwarmEngine {
   private readonly ctx: CanvasRenderingContext2D;
-  private readonly glyphs: { arrow: Path2D; pen: Path2D };
   private tasks: Task[] = [];
   private sections: Section[] = [];
   private agents: Agent[] = [];
@@ -210,11 +209,6 @@ export class SwarmEngine {
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas 2D context unavailable");
     this.ctx = ctx;
-    this.glyphs = {
-      // Multiplayer arrowhead: tip at the origin pointing up-left, notched tail.
-      arrow: new Path2D("M0 0 L13.6 5.1 Q14.6 5.6 13.6 6.2 L7.6 7.6 L6.2 13.6 Q5.6 14.6 5.1 13.6 Z"),
-      pen: new Path2D("M0 0 L3.5 10.5 L8 13 L13 8 L10.5 3.5 Z"),
-    };
   }
 
   start() {
@@ -949,7 +943,6 @@ export class SwarmEngine {
     this.drawFlashes();
     this.drawWork(now);
     if (this.rulerT > 0.01) this.drawMeasures();
-    this.drawAgents();
     ctx.restore();
 
     if (this.rulerT > 0.01) this.drawRulers(ease(this.rulerT), sx);
@@ -1208,83 +1201,6 @@ export class SwarmEngine {
       ctx.stroke();
       if (gap > 2) this.badge(label, master.x + master.w + gap / 2, y - 18, GUIDE_COLOR, "#ffffff");
     }
-  }
-
-  private drawCursor(agent: Agent) {
-    const { ctx } = this;
-    ctx.save();
-    ctx.translate(agent.x, agent.y);
-    if (agent.tool === "arrow" || agent.tool === "dup") ctx.rotate(agent.heading);
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.shadowColor = "rgba(0,0,0,0.22)";
-    ctx.shadowBlur = 3;
-    ctx.shadowOffsetY = 1;
-
-    switch (agent.tool) {
-      case "cross":
-        for (const [width, color] of [
-          [3, "#ffffff"],
-          [1.4, agent.color],
-        ] as const) {
-          ctx.lineWidth = width;
-          ctx.strokeStyle = color;
-          ctx.beginPath();
-          ctx.moveTo(-9, 0);
-          ctx.lineTo(-3, 0);
-          ctx.moveTo(3, 0);
-          ctx.lineTo(9, 0);
-          ctx.moveTo(0, -9);
-          ctx.lineTo(0, -3);
-          ctx.moveTo(0, 3);
-          ctx.lineTo(0, 9);
-          ctx.stroke();
-        }
-        break;
-      case "beam":
-        for (const [width, color] of [
-          [3, "#ffffff"],
-          [1.4, agent.color],
-        ] as const) {
-          ctx.lineWidth = width;
-          ctx.strokeStyle = color;
-          ctx.beginPath();
-          ctx.moveTo(-3.5, -8);
-          ctx.lineTo(3.5, -8);
-          ctx.moveTo(0, -8);
-          ctx.lineTo(0, 8);
-          ctx.moveTo(-3.5, 8);
-          ctx.lineTo(3.5, 8);
-          ctx.stroke();
-        }
-        break;
-      case "pen":
-        ctx.fillStyle = agent.color;
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1.25;
-        ctx.fill(this.glyphs.pen);
-        ctx.stroke(this.glyphs.pen);
-        break;
-      default:
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2.2;
-        ctx.stroke(this.glyphs.arrow);
-        ctx.shadowColor = "transparent";
-        ctx.fillStyle = agent.color;
-        ctx.fill(this.glyphs.arrow);
-    }
-    ctx.restore();
-  }
-
-  private drawAgents() {
-    const { ctx } = this;
-    for (const agent of this.agents) {
-      if (agent.wait > 0 || agent.alpha <= 0.01) continue;
-
-      ctx.globalAlpha = agent.alpha;
-      this.drawCursor(agent);
-    }
-    ctx.globalAlpha = 1;
   }
 
   /**
