@@ -3,6 +3,8 @@
 > A responsive, monochrome single-page personal portfolio built with Next.js (App Router), React, TypeScript, Tailwind CSS, Lucide React, and Motion.
 
 ## 🚀 Live Demo & Deployment
+- **Live site:** [nibin-nihad-portfolio.vercel.app](https://nibin-nihad-portfolio.vercel.app)
+- **Source code:** [github.com/nibinnihad/nibin-portfolio](https://github.com/nibinnihad/nibin-portfolio)
 - Built for deployment on **Vercel**.
 - All portfolio content is managed centrally in [`src/data/portfolio.ts`](./src/data/portfolio.ts).
 
