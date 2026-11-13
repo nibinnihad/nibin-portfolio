@@ -95,6 +95,13 @@ export default function HeroStage({ status, location, title }: Props) {
               unoptimized
               className="h-full w-auto object-contain object-bottom drop-shadow-[0_30px_40px_rgba(0,0,0,0.18)] [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]"
             />
+            {/* Tiny brand mark printed on the shirt's chest (positioned in % of the photo) */}
+            <span
+              aria-hidden="true"
+              className="absolute left-[69%] top-[78.5%] flex -translate-x-1/2 rotate-[5deg] select-none flex-col items-center gap-[0.3em] text-[#4f4642] opacity-90 mix-blend-multiply text-[5px] sm:text-[6px] lg:text-[7px]"
+            >
+              <span className="font-extrabold uppercase leading-none tracking-[0.22em] [text-shadow:0_0.5px_0_rgba(79,70,66,0.35)]">VAVEES</span>
+            </span>
           </motion.div>
           </div>
         </div>
