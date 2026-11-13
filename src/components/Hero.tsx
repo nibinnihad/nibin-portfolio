@@ -4,22 +4,19 @@ import { portfolioData } from "@/data/portfolio";
 import {
   ArrowUpRight,
   Award,
-  BarChart3,
   Briefcase,
-  Cpu,
   FolderGit2,
   Github,
   GraduationCap,
   Linkedin,
   Mail,
-  Users,
 } from "lucide-react";
 
 // Short labels so the hero list never truncates.
-const PROJECT_META: Record<string, { icon: typeof BarChart3; tech: string; name: string; tagline: string }> = {
-  "fintrack-pro": { icon: BarChart3, tech: "React", name: "FinTrack Pro", tagline: "Finance dashboard" },
-  "nss-connect": { icon: Users, tech: "Django", name: "NSS Connect", tagline: "Volunteer platform" },
-  "bio-cyber-sensor": { icon: Cpu, tech: "Flutter", name: "Bio-Cyber Sensor", tagline: "IoT gas classifier" },
+const PROJECT_META: Record<string, { tech: string; name: string; tagline: string }> = {
+  "fintrack-pro": { tech: "React", name: "FinTrack Pro", tagline: "Finance dashboard" },
+  "nss-connect": { tech: "Django", name: "NSS Connect", tagline: "Volunteer platform" },
+  "bio-cyber-sensor": { tech: "Flutter", name: "Bio-Cyber Sensor", tagline: "IoT gas classifier" },
 };
 
 const CORE_STACK = ["Java", "Python", "SQL", "TypeScript", "React", "Next.js", "Docker", "Django"];
@@ -32,10 +29,15 @@ export default function Hero() {
   const current = experiences[0];
   const degree = education[0];
   const stats = [
-    { value: String(projects.length), label: "Projects built", icon: FolderGit2 },
-    { value: String(experiences.length), label: "Internships", icon: Briefcase },
-    { value: degree.duration.slice(-4), label: "B.Tech CSE", icon: GraduationCap },
-    { value: degree.grade.split("|")[1]?.trim() ?? degree.grade, label: "Graduated", icon: Award },
+    { value: String(projects.length), label: "Projects built", icon: FolderGit2, href: "#projects" },
+    { value: String(experiences.length), label: "Internships", icon: Briefcase, href: "#experience" },
+    {
+      value: degree.duration.slice(-4),
+      label: "B.Tech CSE graduate",
+      badge: degree.grade.split("|")[1]?.trim() ?? degree.grade,
+      icon: GraduationCap,
+      href: "#education",
+    },
   ];
   const socials = [
     { href: personal.github, label: "GitHub Profile", icon: Github, external: true },
@@ -59,105 +61,112 @@ export default function Hero() {
           title={personal.title}
         />
 
-        {/* ============ About ============ */}
-        <div className={`${card} flex flex-col justify-between p-7 lg:col-span-4`}>
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="text-xs font-semibold text-cobalt">Computer Science &amp; Engineering graduate</div>
-              <a href="#about" aria-label="Read profile" className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full border border-black/10 text-neutral-500 transition-colors hover:border-cobalt hover:text-cobalt">
-                <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+        {/* ============ Intro panel: profile · now · selected work, one panel split by hairlines ============ */}
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-3xl border border-black/[0.06] bg-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_40px_-16px_rgba(0,0,0,0.14)] lg:col-span-12 lg:grid-cols-12">
+          {/* 01 Profile */}
+          <div className="flex flex-col bg-white p-7 sm:p-8 lg:col-span-5">
+            <div className="flex items-center justify-between">
+              <Eyebrow label="Profile" />
+              <a href="#about" className="group inline-flex items-center gap-1 text-xs font-medium text-cobalt">
+                Read more <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </a>
             </div>
-            <p className="mt-4 text-pretty text-center text-sm leading-relaxed text-cobalt">{personal.shortBio}</p>
+            <h2 className="mt-6 text-xl font-bold tracking-[-0.02em] text-neutral-950 sm:text-2xl">Computer Science &amp; Engineering graduate</h2>
+            <p className="mt-3 text-pretty text-[15px] leading-relaxed text-neutral-600">{personal.shortBio}</p>
+            <div className="mt-auto flex items-center gap-2 pt-7">
+              {socials.map(({ href, label, icon: Icon, external }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="grid h-10 w-10 place-items-center rounded-full border border-black/10 text-neutral-700 transition-colors hover:border-cobalt hover:bg-cobalt hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
+                >
+                  <Icon aria-hidden="true" className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
           </div>
-          <div className="mt-6 flex items-center gap-2">
-            {socials.map(({ href, label, icon: Icon, external }) => (
-              <a
-                key={label}
-                href={href}
-                aria-label={label}
-                {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                className="grid h-10 w-10 place-items-center rounded-full border border-black/10 text-neutral-700 transition-colors hover:border-cobalt hover:bg-cobalt hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt"
-              >
-                <Icon aria-hidden="true" className="h-4 w-4" />
-              </a>
-            ))}
-          </div>
-        </div>
 
-        {/* ============ Currently ============ */}
-        <a
-          href="#experience"
-          className="group relative flex min-h-[300px] flex-col justify-between overflow-hidden rounded-3xl bg-gradient-to-br from-cobalt via-cobalt to-cobalt-deep p-7 text-white shadow-[0_24px_60px_-20px_rgba(44,52,128,0.6)] lg:col-span-4"
-        >
-          <div aria-hidden="true" className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(#fff_1px,transparent_1px),linear-gradient(90deg,#fff_1px,transparent_1px)] [background-size:28px_28px]" />
-          <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full border border-white/15" />
-          <div aria-hidden="true" className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 rounded-full border border-white/15" />
-          <div className="relative flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em]">
-              <Briefcase aria-hidden="true" className="h-3.5 w-3.5" /> Currently
-            </span>
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-white text-cobalt">
-              <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
-            </span>
-          </div>
-          <div className="relative">
-            <div className="text-2xl font-bold leading-tight">{current.role}</div>
-            <div className="mt-1 text-white/70">@ {current.company}</div>
-            <div className="mt-6 flex items-end gap-3 border-t border-white/20 pt-5">
-              <span className="text-5xl font-black leading-none tracking-[-0.04em]">Live</span>
-              <span className="pb-1 text-sm leading-tight text-white/80">
-                production pages built
-                <br />
-                across the HLB HAMT website
+          {/* 02 Now: the one cobalt cell, with the blueprint grid */}
+          <a href="#experience" className="group relative flex flex-col overflow-hidden bg-gradient-to-br from-cobalt via-cobalt to-cobalt-deep p-7 text-white sm:p-8 lg:col-span-3">
+            <div aria-hidden="true" className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(#fff_1px,transparent_1px),linear-gradient(90deg,#fff_1px,transparent_1px)] [background-size:28px_28px]" />
+            <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full border border-white/15" />
+            <div aria-hidden="true" className="pointer-events-none absolute -right-6 -top-6 h-28 w-28 rounded-full border border-white/15" />
+            <div className="relative flex items-center justify-between">
+              <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-white/70">Now</span>
+              <span className="-my-2.5 grid h-9 w-9 place-items-center rounded-full bg-white text-cobalt transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
+                <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
               </span>
             </div>
-          </div>
-        </a>
+            <div className="relative mt-6 text-xl font-bold leading-tight tracking-[-0.02em] sm:text-2xl">{current.role}</div>
+            <div className="relative mt-1 text-[15px] text-white/70">@ {current.company}</div>
+            <div className="relative mt-auto pt-7">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-[0.16em]">
+                <span aria-hidden="true" className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-white opacity-60 motion-safe:animate-ping" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+                </span>
+                Live
+              </span>
+              <p className="mt-3 text-sm leading-snug text-white/80">Production pages built across the HLB HAMT website.</p>
+            </div>
+          </a>
 
-        {/* ============ Featured work ============ */}
-        <div className={`${card} p-6 lg:col-span-4`}>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-semibold text-neutral-950">Featured Work</h2>
-            <a href="#projects" className="-my-2 py-2 text-xs font-medium text-cobalt hover:underline">
-              View all
-            </a>
+          {/* 03 Selected work */}
+          <div className="flex flex-col bg-white p-7 sm:p-8 lg:col-span-4">
+            <div className="flex items-center justify-between">
+              <Eyebrow label="Selected work" />
+              <a href="#projects" className="group inline-flex items-center gap-1 text-xs font-medium text-cobalt">
+                View all <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
+            </div>
+            <ol className="mt-4 divide-y divide-black/[0.06]">
+              {projects.map((project) => {
+                const meta = PROJECT_META[project.id] ?? { tech: project.technologies[0], name: project.title, tagline: project.category };
+                return (
+                  <li key={project.id}>
+                    <a href="#projects" className="group flex items-baseline gap-4 py-3.5">
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-semibold text-neutral-950 transition-colors group-hover:text-cobalt">{meta.name}</span>
+                        <span className="block truncate text-xs text-neutral-500">{meta.tagline}</span>
+                      </span>
+                      <span className="font-mono text-[11px] font-medium text-cobalt">{meta.tech}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
-          <ul className="divide-y divide-black/[0.06]">
-            {projects.map((project) => {
-              const meta = PROJECT_META[project.id] ?? { icon: Briefcase, tech: project.technologies[0], name: project.title, tagline: project.category };
-              const Icon = meta.icon;
-              return (
-                <li key={project.id}>
-                  <a href="#projects" className="group flex items-center gap-3 py-3">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#f3f3f1] text-neutral-800 transition-colors group-hover:bg-cobalt group-hover:text-white">
-                      <Icon aria-hidden="true" className="h-5 w-5" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-neutral-950">{meta.name}</span>
-                      <span className="block truncate text-xs text-neutral-500">{meta.tagline}</span>
-                    </span>
-                    <span className="rounded-full border border-cobalt/20 bg-cobalt/[0.06] px-2.5 py-0.5 font-mono text-[11px] font-medium text-cobalt">{meta.tech}</span>
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
         </div>
 
         {/* ============ Stats: one panel split into cells ============ */}
-        <ul className="grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-black/[0.06] bg-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_40px_-16px_rgba(0,0,0,0.14)] lg:col-span-12 lg:grid-cols-4">
-          {stats.map(({ value, label, icon: Icon }, i) => {
+        <ul className="grid grid-cols-1 gap-px overflow-hidden rounded-3xl border border-black/[0.06] bg-black/[0.06] shadow-[0_1px_2px_rgba(0,0,0,0.04),0_16px_40px_-16px_rgba(0,0,0,0.14)] sm:grid-cols-3 lg:col-span-12">
+          {stats.map(({ value, label, badge, icon: Icon, href }, i) => {
             const last = i === stats.length - 1;
             return (
-              <li key={label} className="group flex flex-col bg-white p-6 transition-colors hover:bg-[#fafaf9]">
-                <div className="flex items-center justify-end">
-                  <span className="grid h-9 w-9 place-items-center rounded-full bg-cobalt/[0.08] text-cobalt transition-colors group-hover:bg-cobalt group-hover:text-white">
-                    <Icon aria-hidden="true" className="h-4 w-4" />
-                  </span>
-                </div>
-                <div className={`mt-8 text-[clamp(32px,4vw,48px)] font-black leading-none tracking-[-0.04em] ${last ? "text-cobalt" : "text-neutral-950"}`}>{value}</div>
-                <div className="mt-3 text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-500">{label}</div>
+              <li key={label} className="flex bg-white">
+                <a
+                  href={href}
+                  aria-label={`${value} ${label}${badge ? `, ${badge}` : ""}`}
+                  className="group flex flex-1 flex-col p-6 transition-colors hover:bg-[#fafaf9] focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-cobalt"
+                >
+                  <div className="flex items-center justify-between">
+                    <ArrowUpRight aria-hidden="true" className="h-4 w-4 text-neutral-400 transition-[color,transform] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-cobalt" />
+                    <span className="grid h-9 w-9 place-items-center rounded-full bg-cobalt/[0.08] text-cobalt transition-colors group-hover:bg-cobalt group-hover:text-white">
+                      <Icon aria-hidden="true" className="h-4 w-4" />
+                    </span>
+                  </div>
+                  <div className="mt-8 flex flex-wrap items-end gap-x-3 gap-y-2">
+                    <span className={`text-[clamp(32px,4vw,48px)] font-black leading-none tracking-[-0.04em] ${last ? "text-cobalt" : "text-neutral-950"}`}>{value}</span>
+                    {badge && (
+                      <span className="mb-1 inline-flex items-center gap-1.5 rounded-full bg-cobalt px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
+                        <Award aria-hidden="true" className="h-3.5 w-3.5" /> {badge}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-3 text-[11px] font-medium uppercase tracking-[0.18em] text-neutral-500">{label}</div>
+                </a>
               </li>
             );
           })}
@@ -177,4 +186,8 @@ export default function Hero() {
       </div>
     </section>
   );
+}
+
+function Eyebrow({ label }: { label: string }) {
+  return <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-cobalt">{label}</span>;
 }

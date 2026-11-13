@@ -29,12 +29,13 @@ const PH1 = Math.PI * 2 + 1.35;
 const SAMPLES = 1200;
 const CARD_W = 2.1; // card width in world units
 const STEP = CARD_W + 0.24; // flat panels need air between them on the curves
-const RIB_A = 0.11; // ribbon starts moving
+const RIB_A = 0.03; // ribbon starts moving (right after the stage pins)
 const RIB_B = 0.76; // ribbon has run the whole rail
 const FLY = 0.13; // scroll spent flying from the rail into the grid
 const GRID_GAP = 20; // px, same as the page's card gaps
 const MAIN = 3; // the profile cards: each rides the ribbon once, then lands in the grid
-const HOLD = 0.6; // viewport heights at the end of the runway where the finished grid stays pinned
+const HEAD0 = CARD_W + (MAIN - 1) * STEP + 0.6; // rail distance already run at p = 0: all cards are on screen from the start
+const HOLD = 0.25; // viewport heights at the end of the runway where the finished grid stays pinned
 
 type Rail = { L: number; pts: Float32Array; tans: Float32Array };
 
@@ -152,20 +153,19 @@ export default function About() {
     };
 
     const render = () => {
-      // Headline: two lines rise into place, then pass each other like trains.
-      const rise = 1 - out(span(p, 0, 0.11));
+      // Headline: two lines sit just under the lead, then pass each other like trains.
       const run = mix(-50, 110, span(p, 0, 0.62)); // far enough that both lines fully leave the stage
-      if (l1Ref.current) l1Ref.current.style.transform = `translate3d(${run}vw,${rise * 34}vh,0)`;
-      if (l2Ref.current) l2Ref.current.style.transform = `translate3d(${-run}vw,${rise * 34}vh,0)`;
+      if (l1Ref.current) l1Ref.current.style.transform = `translate3d(${run}vw,0,0)`;
+      if (l2Ref.current) l2Ref.current.style.transform = `translate3d(${-run}vw,0,0)`;
       if (capRef.current) {
         capRef.current.style.opacity = String(1 - span(p, 0.55, 0.6));
-        capRef.current.style.transform = `translate(-50%,calc(-50% + ${rise * 34}vh))`;
+        capRef.current.style.transform = "translate(-50%,-50%)";
       }
       if (crossRef.current) crossRef.current.style.opacity = String(1 - span(p, 0, 0.05));
       if (ruleRef.current) ruleRef.current.style.transform = `scaleX(${ease(span(p, 0.84, 0.95))})`;
 
       const total = rail.L + n * STEP;
-      const head = mix(0, total, span(p, RIB_A, RIB_B));
+      const head = mix(HEAD0, total, span(p, RIB_A, RIB_B));
       const end = rail.L - CARD_W;
       for (let i = 0; i < n; i++) {
         const el = cards[i];
@@ -189,7 +189,7 @@ export default function About() {
           el.style.transform = `translate(-50%,-50%) translate3d(${x}px,${y}px,${z}px) rotateY(${a}rad)`;
         } else if (i < MAIN) {
           // Fly straight from the end of the rail into the grid slot.
-          const st = mix(RIB_A, RIB_B, (end + i * STEP) / total);
+          const st = mix(RIB_A, RIB_B, (end + i * STEP - HEAD0) / (total - HEAD0));
           const q = out(span(p, st, st + FLY));
           if (q < 0.001) { el.style.visibility = "hidden"; continue; }
           const c = i - 1; // -1, 0, 1: left, middle, right column
@@ -228,7 +228,7 @@ export default function About() {
     // The moment the last profile card has flown into its grid slot (well before p = 1).
     const LAND = Math.min(
       1,
-      mix(RIB_A, RIB_B, (rail.L - CARD_W + (MAIN - 1) * STEP) / (rail.L + n * STEP)) + FLY + 0.01,
+      mix(RIB_A, RIB_B, (rail.L - CARD_W + (MAIN - 1) * STEP - HEAD0) / (rail.L + n * STEP - HEAD0)) + FLY + 0.01,
     );
     const handToSwarm = () => {
       const deferred = cards.slice(0, MAIN).filter((el) => el.hasAttribute(SWARM_DEFER_ATTR));
@@ -311,7 +311,7 @@ export default function About() {
   const setCard = (i: number) => (el: HTMLElement | null) => { cardRefs.current[i] = el; };
 
   return (
-    <section id="about" className="relative overflow-clip border-t border-black/10 bg-[#eaeae7] px-4 py-16 sm:py-24 sm:px-6 lg:px-8">
+    <section id="about" className="relative overflow-clip border-t border-black/10 bg-[#eaeae7] px-4 py-16 sm:py-24 sm:px-6 lg:px-8 motion-safe:lg:pb-0">
       <div aria-hidden="true" className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-white/80 blur-[120px]" />
       <div className="relative mx-auto max-w-7xl">
         <SectionHeader label="Profile" title="Not just code." accent="Practical solutions." />
@@ -333,7 +333,8 @@ export default function About() {
       </div>
 
       {/* Ribbon track: scroll runway with a pinned full-width stage (removed after one run) */}
-      <div ref={trackRef} className="relative -mx-4 sm:-mx-6 lg:-mx-8 motion-safe:lg:h-[300vh]">
+      {/* Pulled up so the pinned headline lands ~210px under the lead instead of a screen below it */}
+      <div ref={trackRef} className="pointer-events-none relative -mx-4 sm:-mx-6 lg:-mx-8 motion-safe:lg:mt-[calc(clamp(40px,6.7vw,130px)*0.98+210px-50vh)] motion-safe:lg:h-[260vh] [&_article]:pointer-events-auto">
         <div
           ref={stageRef}
           className="relative px-4 sm:px-6 lg:px-8 motion-safe:lg:sticky motion-safe:lg:top-0 motion-safe:lg:h-screen motion-safe:lg:overflow-hidden motion-safe:lg:px-0"
@@ -341,7 +342,7 @@ export default function About() {
         >
           {/* Stage furniture, ribbon mode only */}
           <div aria-hidden="true" className="pointer-events-none hidden motion-safe:lg:block">
-            <div ref={crossRef} className="absolute inset-x-8 top-[37.5%] h-px bg-black/[0.08]">
+            <div ref={crossRef} className="absolute inset-x-8 top-[calc(50%-clamp(40px,6.7vw,130px)*0.98-36px)] h-px bg-black/[0.08]">
               <i className="absolute left-1/2 -top-[0.62em] -ml-[0.55em] bg-[#eaeae7] px-[0.3em] font-mono text-[13px] not-italic leading-[1.2] text-black/35">+</i>
             </div>
             <div ref={l1Ref} className="absolute inset-x-0 top-[calc(50%-0.98em)] whitespace-nowrap text-center text-[clamp(40px,6.7vw,130px)] font-black uppercase leading-none tracking-[-0.055em] text-neutral-950 will-change-transform">

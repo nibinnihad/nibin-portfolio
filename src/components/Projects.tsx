@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { portfolioData, type Project } from "@/data/portfolio";
 import { ArrowUpRight, CheckCircle2, Github, Sparkles } from "lucide-react";
@@ -14,6 +14,33 @@ export default function Projects() {
   const { projects } = portfolioData;
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  // Per panel, the stretch of `scrollYProgress` during which the next panel slides over it.
+  // Measured from layout heights: a pinned (sticky) panel's own position can't be trusted.
+  const [covers, setCovers] = useState<[number, number][]>([]);
+
+  useEffect(() => {
+    const box = ref.current;
+    if (!box) return;
+    const measure = () => {
+      const run = Math.max(1, box.offsetHeight - window.innerHeight);
+      const kids = Array.from(box.children) as HTMLElement[];
+      let below = 0; // layout top of the next panel, relative to the stack
+      setCovers(
+        kids.map((k) => {
+          below += k.offsetHeight;
+          const pin = parseFloat(getComputedStyle(k).top) || 0;
+          const card = (k.firstElementChild as HTMLElement | null)?.offsetHeight ?? k.offsetHeight;
+          // Next panel's top travels from this card's pinned bottom edge up to the pin line.
+          return [(below - pin - card) / run, (below - pin) / run];
+        }),
+      );
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(box);
+    window.addEventListener("resize", measure);
+    return () => { ro.disconnect(); window.removeEventListener("resize", measure); };
+  }, []);
 
   return (
     <section id="projects" className="relative border-t border-black/10 bg-[#f3f3f1] px-4 py-16 sm:py-24 sm:px-6 lg:px-8">
@@ -21,7 +48,7 @@ export default function Projects() {
         <SectionHeader label="Projects" title="Projects that" accent="speak." />
         <div ref={ref} className="relative">
           {projects.map((project, i) => (
-            <ProjectPanel key={project.id} project={project} i={i} count={projects.length} progress={scrollYProgress} />
+            <ProjectPanel key={project.id} project={project} i={i} count={projects.length} progress={scrollYProgress} cover={covers[i]} />
           ))}
         </div>
       </div>
@@ -29,10 +56,17 @@ export default function Projects() {
   );
 }
 
-function ProjectPanel({ project, i, count, progress }: { project: Project; i: number; count: number; progress: MotionValue<number> }) {
+function ProjectPanel({ project, i, count, progress, cover }: { project: Project; i: number; count: number; progress: MotionValue<number>; cover?: [number, number] }) {
   const start = i / count;
   const scale = useTransform(progress, [start, 1], [1, 1 - (count - 1 - i) * 0.05]);
-  const dim = useTransform(progress, [start, Math.min(1, start + 1 / count)], [0, i === count - 1 ? 0 : 0.5]);
+  // Dim only while the next panel slides over this one (the last panel never dims).
+  const coverRef = useRef(cover);
+  coverRef.current = cover;
+  const dim = useTransform(progress, (v) => {
+    const c = coverRef.current;
+    if (!c || i === count - 1) return 0;
+    return 0.5 * Math.min(1, Math.max(0, (v - c[0]) / (c[1] - c[0] || 1)));
+  });
 
   return (
     <div className="sticky top-20 pb-8 sm:top-24" style={{ zIndex: i + 1 }}>
